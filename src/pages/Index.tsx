@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { FileArrowUp, Share2, Shield } from 'lucide-react';
+import { Upload, Shield, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FileDropZone from '@/components/FileDropZone';
 import FileCard from '@/components/FileCard';
@@ -84,7 +83,7 @@ const Index = () => {
               <span>Secure P2P Sharing</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
-              <FileArrowUp size={16} className="text-primary" />
+              <Upload size={16} className="text-primary" />
               <span>No Size Limits</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">

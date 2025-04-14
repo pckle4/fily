@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { FileMetadata } from '@/services/indexedDBService';
 import indexedDBService from '@/services/indexedDBService';
 import FileCard from '@/components/FileCard';
-import { ArrowLeft, Download, FileNotFound } from 'lucide-react';
+import { ArrowLeft, DownloadIcon, FileX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 
-const Download = () => {
+const DownloadPage = () => {
   const { shareId = '' } = useParams<{ shareId: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [fileData, setFileData] = useState<{ metadata: FileMetadata; url: string } | null>(null);
@@ -87,7 +87,7 @@ const Download = () => {
           ) : error ? (
             <div className="py-12 flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 mb-4 text-gray-400">
-                <FileNotFound size={64} />
+                <FileX size={64} />
               </div>
               <h3 className="text-xl font-semibold text-gray-800">File Not Found</h3>
               <p className="mt-2 text-gray-600">{error}</p>
@@ -111,7 +111,7 @@ const Download = () => {
                 asChild
               >
                 <a href={fileData.url} download={fileData.metadata.name}>
-                  <Download size={18} />
+                  <DownloadIcon size={18} />
                   Download Now
                 </a>
               </Button>
@@ -132,4 +132,4 @@ const Download = () => {
   );
 };
 
-export default Download;
+export default DownloadPage;

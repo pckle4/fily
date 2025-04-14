@@ -70,22 +70,44 @@ const Index = () => {
       });
   };
 
+  const handleStopSharing = async () => {
+    if (!uploadedFile) return;
+    
+    try {
+      await indexedDBService.deleteFile(uploadedFile.id);
+      setUploadedFile(null);
+      toast({
+        title: "Sharing stopped",
+        description: "Your file is no longer available for sharing",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error stopping sharing:', error);
+      toast({
+        title: "Error",
+        description: "Could not stop sharing the file",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
       <div className="container px-4 py-12 mx-auto">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-purple-gradient mb-4 animate-expand">
-            KineticSwarm
+            Fily
           </h1>
           <p className="text-gray-600 text-lg mb-6">
-            Fast, secure P2P file sharing directly from your browser
+            Send files quickly and securely from your browser
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm">
             <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
               <Shield size={16} className="text-primary" />
-              <span>Secure P2P Sharing</span>
+              <span>Secure Sharing</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
               <Upload size={16} className="text-primary" />
@@ -119,13 +141,23 @@ const Index = () => {
               <div className="space-y-4">
                 <FileCard metadata={uploadedFile} />
                 
-                <Button 
-                  className="w-full gap-2" 
-                  onClick={copyShareLink}
-                >
-                  <Share2 size={18} />
-                  Copy Share Link
-                </Button>
+                <div className="flex flex-col gap-3">
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={copyShareLink}
+                  >
+                    <Share2 size={18} />
+                    Copy Share Link
+                  </Button>
+                  
+                  <Button 
+                    variant="destructive" 
+                    className="w-full gap-2" 
+                    onClick={handleStopSharing}
+                  >
+                    Stop Sharing
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
@@ -137,9 +169,12 @@ const Index = () => {
           </div>
         </div>
         
-        <div className="text-center mt-16 text-sm text-gray-500">
-          <p>All files are stored locally in your browser and expire after 7 days</p>
-          <p className="mt-1">© 2025 KineticSwarm · Built with P2P technology</p>
+        <div className="text-center mt-16">
+          <p className="text-sm text-gray-500">All files are stored locally in your browser and expire after 7 days</p>
+          <div className="mt-4 flex flex-col items-center justify-center">
+            <p className="font-mono text-xs text-gray-400 animate-typing">A Nowhile initiative</p>
+            <p className="mt-2 text-sm text-gray-600">Made with ❤️ by Ansh</p>
+          </div>
         </div>
       </div>
     </div>

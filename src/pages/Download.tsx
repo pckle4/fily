@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { FileMetadata } from '@/services/indexedDBService';
 import indexedDBService from '@/services/indexedDBService';
 import FileCard from '@/components/FileCard';
-import { ArrowLeft, DownloadIcon, FileX } from 'lucide-react';
+import { ArrowLeft, DownloadIcon, FileX, Calendar, Clock, HardDrive, FileType, Lock, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { Progress } from '@/components/ui/progress';
+import { Card } from '@/components/ui/card';
 
 const DownloadPage = () => {
   const { shareId = '' } = useParams<{ shareId: string }>();
@@ -15,6 +17,8 @@ const DownloadPage = () => {
   const [fileData, setFileData] = useState<{ metadata: FileMetadata; url: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const fetchFile = async () => {
@@ -53,12 +57,52 @@ const DownloadPage = () => {
 
   const handleDownload = () => {
     if (fileData) {
+      setIsDownloading(true);
+      // Simulate download progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsDownloading(false);
+            setDownloadProgress(0);
+            toast({
+              title: "Download completed!",
+              description: `${fileData.metadata.name} has been downloaded`,
+              duration: 3000,
+            });
+          }, 500);
+        }
+        setDownloadProgress(progress);
+      }, 300);
+      
       toast({
         title: "Download started!",
         description: `Downloading ${fileData.metadata.name}...`,
         duration: 3000,
       });
     }
+  };
+  
+  const formatDate = (dateString: Date) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
+  const calculateDaysRemaining = (expiryDate: Date): number => {
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const diffTime = Math.abs(expiry.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
   return (
@@ -104,28 +148,108 @@ const DownloadPage = () => {
                 showShare={false}
               />
               
-              <Button 
-                onClick={handleDownload} 
-                size="lg"
-                className="w-full gap-2 animate-pulse-glow"
-                asChild
-              >
-                <a href={fileData.url} download={fileData.metadata.name}>
-                  <DownloadIcon size={18} />
-                  Download Now
-                </a>
-              </Button>
+              {/* File Metrics */}
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                    <Calendar size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Uploaded</p>
+                    <p className="text-sm font-medium">{formatDate(fileData.metadata.uploadDate)}</p>
+                  </div>
+                </Card>
+                
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 rounded-lg text-green-600">
+                    <Clock size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Expires In</p>
+                    <p className="text-sm font-medium">{calculateDaysRemaining(fileData.metadata.expiryDate)} days</p>
+                  </div>
+                </Card>
+                
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+                    <HardDrive size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Size</p>
+                    <p className="text-sm font-medium">
+                      {fileData.metadata.size < 1024
+                        ? `${fileData.metadata.size} bytes`
+                        : fileData.metadata.size < 1024 * 1024
+                        ? `${(fileData.metadata.size / 1024).toFixed(2)} KB`
+                        : `${(fileData.metadata.size / (1024 * 1024)).toFixed(2)} MB`}
+                    </p>
+                  </div>
+                </Card>
+                
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600">
+                    <FileType size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Type</p>
+                    <p className="text-sm font-medium">{fileData.metadata.type.split('/')[1]?.toUpperCase() || 'FILE'}</p>
+                  </div>
+                </Card>
+                
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-red-100 rounded-lg text-red-600">
+                    <Lock size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Share ID</p>
+                    <p className="text-sm font-mono font-medium">{fileData.metadata.shareId}</p>
+                  </div>
+                </Card>
+                
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+                    <Shield size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Storage</p>
+                    <p className="text-sm font-medium">Local Browser</p>
+                  </div>
+                </Card>
+              </div>
+              
+              {/* Animated Download Button */}
+              {isDownloading ? (
+                <div className="space-y-3">
+                  <Progress value={downloadProgress} className="h-2 w-full" />
+                  <p className="text-center text-sm text-gray-600">Downloading... {Math.round(downloadProgress)}%</p>
+                </div>
+              ) : (
+                <Button 
+                  onClick={handleDownload} 
+                  size="lg"
+                  className="w-full gap-2 animate-pulse-slow transition-all hover:scale-105"
+                  asChild
+                >
+                  <a href={fileData.url} download={fileData.metadata.name}>
+                    <DownloadIcon size={18} className="animate-bounce" />
+                    Download Now
+                  </a>
+                </Button>
+              )}
               
               <p className="text-xs text-center text-gray-500 mt-4">
-                This file will expire in {
-                  Math.ceil(
-                    (new Date(fileData.metadata.expiryDate).getTime() - new Date().getTime()) / 
-                    (1000 * 60 * 60 * 24)
-                  )
-                } days
+                This file will expire in {calculateDaysRemaining(fileData.metadata.expiryDate)} days
               </p>
             </div>
           )}
+        </div>
+        
+        <div className="text-center mt-16">
+          <p className="text-sm text-gray-500">All files are stored locally in your browser and expire after 7 days</p>
+          <div className="mt-4 flex flex-col items-center justify-center">
+            <p className="font-mono text-xs text-gray-400 animate-typing">A Nowhile initiative</p>
+            <p className="mt-2 text-sm text-gray-600">Made with ❤️ by Ansh</p>
+          </div>
         </div>
       </div>
     </div>

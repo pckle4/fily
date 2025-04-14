@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FileMetadata } from '@/services/indexedDBService';
-import { FileIcon, Download, Share2, Clock } from 'lucide-react';
+import { FileIcon, DownloadIcon, Share2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
@@ -137,7 +137,7 @@ const FileCard: React.FC<FileCardProps> = ({
               asChild
             >
               <a href={downloadUrl} download={metadata.name}>
-                <Download size={16} />
+                <DownloadIcon size={16} />
                 Download
               </a>
             </Button>

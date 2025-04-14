@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Upload, Shield, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,10 @@ const Index = () => {
   const copyShareLink = () => {
     if (!uploadedFile) return;
     
-    const shareUrl = `${window.location.origin}/download/${uploadedFile.shareId}`;
+    // Use window.location to construct a proper URL with the correct protocol
+    const origin = window.location.origin;
+    const shareUrl = `${origin}/download/${uploadedFile.shareId}`;
+    
     navigator.clipboard.writeText(shareUrl)
       .then(() => {
         toast({
@@ -55,7 +59,8 @@ const Index = () => {
           duration: 3000,
         });
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Copy error:', error);
         toast({
           title: "Copy failed",
           description: "Could not copy link to clipboard",

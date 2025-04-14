@@ -37,7 +37,10 @@ const FileCard: React.FC<FileCardProps> = ({
   };
 
   const copyShareLink = () => {
-    const shareUrl = `${window.location.origin}/download/${metadata.shareId}`;
+    // Use window.location to construct a proper URL with the correct protocol
+    const origin = window.location.origin;
+    const shareUrl = `${origin}/download/${metadata.shareId}`;
+    
     navigator.clipboard.writeText(shareUrl)
       .then(() => {
         toast({
@@ -46,7 +49,8 @@ const FileCard: React.FC<FileCardProps> = ({
           duration: 3000,
         });
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Copy error:', error);
         toast({
           title: "Copy failed",
           description: "Could not copy link to clipboard",

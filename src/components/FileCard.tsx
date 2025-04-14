@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FileMetadata } from '@/services/indexedDBService';
-import { FileIcon, DownloadIcon, Share2, Clock, FileText, FilePdf, FileVideo, FileAudio, FileImage, FileCode, FileArchive } from 'lucide-react';
+import { FileIcon, DownloadIcon, Share2, Clock, FileText, File, FileVideo, FileAudio, FileImage, FileCode, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
@@ -83,11 +83,11 @@ const FileCard: React.FC<FileCardProps> = ({
     } else if (type.includes('audio')) {
       return <FileAudio className="h-6 w-6" />;
     } else if (type.includes('pdf')) {
-      return <FilePdf className="h-6 w-6" />;
+      return <File className="h-6 w-6" />; // Changed from FilePdf to File
     } else if (type.includes('word') || type.includes('document')) {
       return <FileText className="h-6 w-6" />;
     } else if (type.includes('zip') || type.includes('compressed')) {
-      return <FileArchive className="h-6 w-6" />;
+      return <Archive className="h-6 w-6" />; // Changed from FileArchive to Archive
     } else if (type.includes('javascript') || type.includes('html') || type.includes('css') || type.includes('json')) {
       return <FileCode className="h-6 w-6" />;
     }

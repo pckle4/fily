@@ -38,6 +38,25 @@ const FileCard: React.FC<FileCardProps> = ({
     });
   };
 
+  // Shorten and format file type
+  const formatFileType = (type: string): string => {
+    const mainType = type.split('/')[0];
+    const subType = type.split('/')[1];
+    
+    if (!subType) return mainType.toUpperCase();
+    
+    // Handle common file types with shorter displays
+    if (subType === 'jpeg' || subType === 'jpg' || subType === 'png' || subType === 'gif') return 'IMAGE';
+    if (subType === 'mp4' || subType === 'mpeg' || subType === 'quicktime') return 'VIDEO';
+    if (subType === 'pdf') return 'PDF';
+    if (subType === 'msword' || subType.includes('document')) return 'DOC';
+    if (subType === 'zip' || subType === 'x-zip-compressed' || subType.includes('compressed')) return 'ZIP';
+    if (subType === 'javascript' || subType === 'html' || subType === 'css') return 'CODE';
+    
+    // For other types, limit to 10 characters
+    return subType.length > 10 ? subType.substring(0, 10).toUpperCase() + '...' : subType.toUpperCase();
+  };
+
   const copyShareLink = () => {
     // Use window.location to construct a proper URL with the correct protocol
     const origin = window.location.origin;
@@ -110,29 +129,29 @@ const FileCard: React.FC<FileCardProps> = ({
 
   return (
     <Card className="animate-expand overflow-hidden card-hover">
-      <div className="p-6">
-        <div className="flex items-center gap-4">
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center gap-3">
           <div className={`p-3 rounded-lg ${getFileTypeColor()}`}>
             {getFileIcon()}
           </div>
-          <div className="flex-grow">
+          <div className="flex-grow min-w-0">
             <h3 className="text-lg font-medium truncate" title={metadata.name}>
               {metadata.name}
             </h3>
             <p className="text-sm text-gray-500">
-              {formatFileSize(metadata.size)} • {metadata.type.split('/')[1]?.toUpperCase() || 'FILE'}
+              {formatFileSize(metadata.size)} • {formatFileType(metadata.type)}
             </p>
           </div>
         </div>
         
         <div className="mt-4 space-y-2">
           {showShare && (
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm flex-wrap gap-2">
               <div className="flex items-center text-gray-500 gap-2">
                 <Share2 size={16} className="text-purple-500" />
                 <span>Share Code</span>
               </div>
-              <div className="font-mono bg-primary/10 px-2 py-1 rounded text-primary font-medium">
+              <div className="font-mono bg-primary/10 px-2 py-1 rounded text-primary font-medium truncate max-w-[150px]">
                 {metadata.shareId}
               </div>
             </div>
@@ -149,21 +168,21 @@ const FileCard: React.FC<FileCardProps> = ({
           </div>
         </div>
         
-        <div className="mt-6 flex gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {showShare && (
             <Button 
               variant="outline" 
-              className="flex-1 btn-hover"
+              className="flex-1 btn-hover min-w-[120px]"
               onClick={copyShareLink}
             >
               <Share2 size={16} className="mr-2 text-purple-500" />
-              Copy Share Link
+              Copy Link
             </Button>
           )}
           
           {showDownload && downloadUrl && (
             <Button 
-              className="flex-1 gap-2 btn-hover bg-blue-gradient"
+              className="flex-1 gap-2 btn-hover bg-blue-gradient min-w-[120px]"
               asChild
             >
               <a href={downloadUrl} download={metadata.name}>
@@ -176,7 +195,7 @@ const FileCard: React.FC<FileCardProps> = ({
           {onStopSharing && (
             <Button 
               variant="destructive" 
-              className="flex-1 btn-hover"
+              className="flex-1 btn-hover min-w-[120px]"
               onClick={onStopSharing}
             >
               Stop Sharing

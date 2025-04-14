@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Upload, Shield, Share2, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Upload, Shield, Share2, Clock, Code, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FileDropZone from '@/components/FileDropZone';
 import FileCard from '@/components/FileCard';
 import ExpirySelector, { ExpiryDuration } from '@/components/ExpirySelector';
 import indexedDBService, { FileMetadata } from '@/services/indexedDBService';
 import { useToast } from '@/components/ui/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -17,6 +19,7 @@ const Index = () => {
     display: '7 Days'
   });
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Clean up expired files when the component loads
@@ -102,6 +105,15 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
       <div className="container px-4 py-12 mx-auto">
         {/* Header */}
+        <div className="flex justify-end mb-4">
+          <Button variant="ghost" size="sm" asChild className="flex items-center gap-2">
+            <Link to="/tech-stack">
+              <Code size={16} className="text-purple-500" />
+              <span className="hidden sm:inline">Tech Stack</span>
+            </Link>
+          </Button>
+        </div>
+
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-purple-gradient mb-4 animate-expand">
             Fily
@@ -162,9 +174,10 @@ const Index = () => {
                 />
               </div>
             ) : (
-              <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 backdrop-blur-sm">
-                <p className="text-gray-500 text-center">
-                  Upload a file to get your share link
+              <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 backdrop-blur-sm">
+                <Info size={40} className="text-gray-300 mb-3" />
+                <p className="text-gray-500 text-center max-w-xs">
+                  Upload a file to get your share link. Your files are stored locally and securely in your browser.
                 </p>
               </div>
             )}
@@ -174,6 +187,9 @@ const Index = () => {
         <div className="text-center mt-16">
           <p className="text-sm text-gray-500">All files are stored locally in your browser and expire based on your selection</p>
           <div className="mt-4 flex flex-col items-center justify-center">
+            <Link to="/tech-stack" className="text-xs text-primary hover:underline mb-2">
+              View Tech Stack
+            </Link>
             <p className="font-mono text-xs text-gray-400 animate-typing">A Nowhile initiative</p>
             <p className="mt-2 text-sm text-gray-600">Made with ❤️ by Ansh</p>
           </div>

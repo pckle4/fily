@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FileMetadata } from '@/services/indexedDBService';
-import { FileIcon, DownloadIcon, Share2, Clock, FileText, File, FileVideo, FileAudio, FileImage, FileCode, Archive } from 'lucide-react';
+import { FileIcon, DownloadIcon, Share2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,15 +11,13 @@ interface FileCardProps {
   downloadUrl?: string;
   showDownload?: boolean;
   showShare?: boolean;
-  onStopSharing?: () => void;
 }
 
 const FileCard: React.FC<FileCardProps> = ({ 
   metadata, 
   downloadUrl, 
   showDownload = false,
-  showShare = true,
-  onStopSharing
+  showShare = true
 }) => {
   const { toast } = useToast();
   
@@ -36,25 +34,6 @@ const FileCard: React.FC<FileCardProps> = ({
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  // Shorten and format file type
-  const formatFileType = (type: string): string => {
-    const mainType = type.split('/')[0];
-    const subType = type.split('/')[1];
-    
-    if (!subType) return mainType.toUpperCase();
-    
-    // Handle common file types with shorter displays
-    if (subType === 'jpeg' || subType === 'jpg' || subType === 'png' || subType === 'gif') return 'IMAGE';
-    if (subType === 'mp4' || subType === 'mpeg' || subType === 'quicktime') return 'VIDEO';
-    if (subType === 'pdf') return 'PDF';
-    if (subType === 'msword' || subType.includes('document')) return 'DOC';
-    if (subType === 'zip' || subType === 'x-zip-compressed' || subType.includes('compressed')) return 'ZIP';
-    if (subType === 'javascript' || subType === 'html' || subType === 'css') return 'CODE';
-    
-    // For other types, limit to 10 characters
-    return subType.length > 10 ? subType.substring(0, 10).toUpperCase() + '...' : subType.toUpperCase();
   };
 
   const copyShareLink = () => {
@@ -91,67 +70,40 @@ const FileCard: React.FC<FileCardProps> = ({
   
   const daysRemaining = calculateDaysRemaining();
   
-  // Get file icon based on type
-  const getFileIcon = () => {
-    const type = metadata.type.toLowerCase();
-    
-    if (type.includes('image')) {
-      return <FileImage className="h-6 w-6" />;
-    } else if (type.includes('video')) {
-      return <FileVideo className="h-6 w-6" />;
-    } else if (type.includes('audio')) {
-      return <FileAudio className="h-6 w-6" />;
-    } else if (type.includes('pdf')) {
-      return <File className="h-6 w-6" />; // Changed from FilePdf to File
-    } else if (type.includes('word') || type.includes('document')) {
-      return <FileText className="h-6 w-6" />;
-    } else if (type.includes('zip') || type.includes('compressed')) {
-      return <Archive className="h-6 w-6" />; // Changed from FileArchive to Archive
-    } else if (type.includes('javascript') || type.includes('html') || type.includes('css') || type.includes('json')) {
-      return <FileCode className="h-6 w-6" />;
-    }
-    return <FileIcon className="h-6 w-6" />;
-  };
-
   // Determine file icon background color based on type
   const getFileTypeColor = () => {
-    const type = metadata.type.toLowerCase();
-    
-    if (type.includes('image')) return 'file-icon-image';
-    if (type.includes('video')) return 'file-icon-video';
-    if (type.includes('audio')) return 'file-icon-audio';
-    if (type.includes('pdf')) return 'file-icon-pdf';
-    if (type.includes('word') || type.includes('document')) return 'file-icon-doc';
-    if (type.includes('zip') || type.includes('compressed')) return 'file-icon-zip';
-    if (type.includes('javascript') || type.includes('html') || type.includes('css') || type.includes('json')) return 'file-icon-code';
-    return 'file-icon-default';
+    if (metadata.type.includes('image')) return 'bg-blue-100 text-blue-600';
+    if (metadata.type.includes('video')) return 'bg-red-100 text-red-600';
+    if (metadata.type.includes('audio')) return 'bg-green-100 text-green-600';
+    if (metadata.type.includes('pdf')) return 'bg-yellow-100 text-yellow-600';
+    return 'bg-gray-100 text-gray-600';
   };
 
   return (
-    <Card className="animate-expand overflow-hidden card-hover">
-      <div className="p-4 sm:p-6">
-        <div className="flex items-center gap-3">
+    <Card className="animate-expand overflow-hidden">
+      <div className="p-6">
+        <div className="flex items-center gap-4">
           <div className={`p-3 rounded-lg ${getFileTypeColor()}`}>
-            {getFileIcon()}
+            <FileIcon size={24} />
           </div>
-          <div className="flex-grow min-w-0">
+          <div className="flex-grow">
             <h3 className="text-lg font-medium truncate" title={metadata.name}>
               {metadata.name}
             </h3>
             <p className="text-sm text-gray-500">
-              {formatFileSize(metadata.size)} • {formatFileType(metadata.type)}
+              {formatFileSize(metadata.size)} • {metadata.type.split('/')[1]?.toUpperCase() || 'FILE'}
             </p>
           </div>
         </div>
         
         <div className="mt-4 space-y-2">
           {showShare && (
-            <div className="flex items-center justify-between text-sm flex-wrap gap-2">
+            <div className="flex items-center justify-between text-sm">
               <div className="flex items-center text-gray-500 gap-2">
-                <Share2 size={16} className="text-purple-500" />
+                <Share2 size={16} />
                 <span>Share Code</span>
               </div>
-              <div className="font-mono bg-primary/10 px-2 py-1 rounded text-primary font-medium truncate max-w-[150px]">
+              <div className="font-mono bg-primary/10 px-2 py-1 rounded text-primary font-medium">
                 {metadata.shareId}
               </div>
             </div>
@@ -159,7 +111,7 @@ const FileCard: React.FC<FileCardProps> = ({
           
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center text-gray-500 gap-2">
-              <Clock size={16} className="text-blue-500" />
+              <Clock size={16} />
               <span>Expires in</span>
             </div>
             <div className="font-medium">
@@ -168,37 +120,26 @@ const FileCard: React.FC<FileCardProps> = ({
           </div>
         </div>
         
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 flex gap-2">
           {showShare && (
             <Button 
               variant="outline" 
-              className="flex-1 btn-hover min-w-[120px]"
+              className="flex-1"
               onClick={copyShareLink}
             >
-              <Share2 size={16} className="mr-2 text-purple-500" />
-              Copy Link
+              Copy Share Link
             </Button>
           )}
           
           {showDownload && downloadUrl && (
             <Button 
-              className="flex-1 gap-2 btn-hover bg-blue-gradient min-w-[120px]"
+              className="flex-1 gap-2"
               asChild
             >
               <a href={downloadUrl} download={metadata.name}>
-                <DownloadIcon size={16} className="animate-bounce" />
+                <DownloadIcon size={16} />
                 Download
               </a>
-            </Button>
-          )}
-          
-          {onStopSharing && (
-            <Button 
-              variant="destructive" 
-              className="flex-1 btn-hover min-w-[120px]"
-              onClick={onStopSharing}
-            >
-              Stop Sharing
             </Button>
           )}
         </div>

@@ -5,13 +5,11 @@ import { Button } from '@/components/ui/button';
 import { FileMetadata } from '@/services/indexedDBService';
 import indexedDBService from '@/services/indexedDBService';
 import FileCard from '@/components/FileCard';
-import { ArrowLeft, DownloadIcon, FileX, Calendar, Clock, HardDrive, FileType, Lock, Shield, User, Hash, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, DownloadIcon, FileX, Calendar, Clock, HardDrive, FileType, Lock, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const DownloadPage = () => {
   const { shareId = '' } = useParams<{ shareId: string }>();
@@ -107,30 +105,6 @@ const DownloadPage = () => {
     return diffDays;
   };
 
-  const getFileExtension = (fileName: string): string => {
-    return fileName.split('.').pop()?.toUpperCase() || 'FILE';
-  };
-
-  const getTimeUntilExpiry = (expiryDate: Date): string => {
-    const now = new Date();
-    const expiry = new Date(expiryDate);
-    const diffTime = expiry.getTime() - now.getTime();
-    
-    if (diffTime <= 0) return 'Expired';
-    
-    const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (days > 0) {
-      return `${days} days, ${hours} hours`;
-    } else if (hours > 0) {
-      return `${hours} hours, ${minutes} minutes`;
-    } else {
-      return `${minutes} minutes`;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -148,7 +122,7 @@ const DownloadPage = () => {
           </p>
         </div>
 
-        <div className="glass rounded-xl shadow-xl p-6 max-w-md mx-auto">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl p-6 max-w-md mx-auto">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center">
               <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin-slow"></div>
@@ -167,15 +141,6 @@ const DownloadPage = () => {
             </div>
           ) : fileData && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <Badge variant="outline" className="bg-primary/10 text-primary">
-                  {getFileExtension(fileData.metadata.name)}
-                </Badge>
-                <Badge variant="outline" className="bg-green-100 text-green-700">
-                  Available
-                </Badge>
-              </div>
-              
               <FileCard 
                 metadata={fileData.metadata} 
                 downloadUrl={fileData.url}
@@ -185,39 +150,28 @@ const DownloadPage = () => {
               
               {/* File Metrics */}
               <div className="grid grid-cols-2 gap-3">
-                <Card className="p-3 flex items-center space-x-3 card-hover">
-                  <div className="p-2 icon-box icon-box-blue">
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                     <Calendar size={18} />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Uploaded</p>
-                    <p className="text-sm font-medium truncate-2" title={formatDate(fileData.metadata.uploadDate)}>
-                      {formatDate(fileData.metadata.uploadDate)}
-                    </p>
+                    <p className="text-sm font-medium">{formatDate(fileData.metadata.uploadDate)}</p>
                   </div>
                 </Card>
                 
-                <Card className="p-3 flex items-center space-x-3 card-hover">
-                  <div className="p-2 icon-box icon-box-green">
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 rounded-lg text-green-600">
                     <Clock size={18} />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Expires In</p>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <p className="text-sm font-medium">{calculateDaysRemaining(fileData.metadata.expiryDate)} days</p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{getTimeUntilExpiry(fileData.metadata.expiryDate)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <p className="text-sm font-medium">{calculateDaysRemaining(fileData.metadata.expiryDate)} days</p>
                   </div>
                 </Card>
                 
-                <Card className="p-3 flex items-center space-x-3 card-hover">
-                  <div className="p-2 icon-box icon-box-purple">
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
                     <HardDrive size={18} />
                   </div>
                   <div>
@@ -232,19 +186,19 @@ const DownloadPage = () => {
                   </div>
                 </Card>
                 
-                <Card className="p-3 flex items-center space-x-3 card-hover">
-                  <div className="p-2 icon-box icon-box-yellow">
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600">
                     <FileType size={18} />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Type</p>
-                    <p className="text-sm font-medium truncate">{fileData.metadata.type}</p>
+                    <p className="text-sm font-medium">{fileData.metadata.type.split('/')[1]?.toUpperCase() || 'FILE'}</p>
                   </div>
                 </Card>
                 
-                <Card className="p-3 flex items-center space-x-3 card-hover">
-                  <div className="p-2 icon-box icon-box-red">
-                    <Hash size={18} />
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-red-100 rounded-lg text-red-600">
+                    <Lock size={18} />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Share ID</p>
@@ -252,8 +206,8 @@ const DownloadPage = () => {
                   </div>
                 </Card>
                 
-                <Card className="p-3 flex items-center space-x-3 card-hover">
-                  <div className="p-2 icon-box icon-box-blue">
+                <Card className="p-3 flex items-center space-x-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
                     <Shield size={18} />
                   </div>
                   <div>
@@ -261,29 +215,19 @@ const DownloadPage = () => {
                     <p className="text-sm font-medium">Local Browser</p>
                   </div>
                 </Card>
-                
-                <Card className="p-3 flex items-center space-x-3 card-hover col-span-2 bg-yellow-50/50">
-                  <div className="p-2 icon-box-yellow rounded-lg">
-                    <AlertTriangle size={18} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Note</p>
-                    <p className="text-sm text-amber-700">This file is stored in your browser and will expire in {calculateDaysRemaining(fileData.metadata.expiryDate)} days</p>
-                  </div>
-                </Card>
               </div>
               
               {/* Animated Download Button */}
               {isDownloading ? (
                 <div className="space-y-3">
-                  <Progress value={downloadProgress} className="h-2 w-full bg-gray-100" />
+                  <Progress value={downloadProgress} className="h-2 w-full" />
                   <p className="text-center text-sm text-gray-600">Downloading... {Math.round(downloadProgress)}%</p>
                 </div>
               ) : (
                 <Button 
                   onClick={handleDownload} 
                   size="lg"
-                  className="w-full gap-2 btn-hover bg-blue-gradient"
+                  className="w-full gap-2 animate-pulse-slow transition-all hover:scale-105"
                   asChild
                 >
                   <a href={fileData.url} download={fileData.metadata.name}>
@@ -301,7 +245,7 @@ const DownloadPage = () => {
         </div>
         
         <div className="text-center mt-16">
-          <p className="text-sm text-gray-500">All files are stored locally in your browser and expire based on the set duration</p>
+          <p className="text-sm text-gray-500">All files are stored locally in your browser and expire after 7 days</p>
           <div className="mt-4 flex flex-col items-center justify-center">
             <p className="font-mono text-xs text-gray-400 animate-typing">A Nowhile initiative</p>
             <p className="mt-2 text-sm text-gray-600">Made with ❤️ by Ansh</p>

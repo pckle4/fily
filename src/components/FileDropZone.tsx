@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, File } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FileDropZoneProps {
@@ -53,11 +53,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({ onFileSelected, isUploading
       onClick={() => !isUploading && fileInputRef.current?.click()}
     >
       <div className="animate-float p-4 bg-primary/10 rounded-full">
-        {isUploading ? (
-          <File size={48} className="text-primary animate-pulse" />
-        ) : (
-          <Upload size={48} className="text-primary" />
-        )}
+        <Upload size={48} className="text-primary" />
       </div>
       <div className="text-center">
         <h3 className="text-lg font-medium text-gray-800">

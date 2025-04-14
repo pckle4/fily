@@ -1,25 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Upload, Shield, Share2, Clock, Code, Info } from 'lucide-react';
+import { Upload, Shield, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FileDropZone from '@/components/FileDropZone';
 import FileCard from '@/components/FileCard';
-import ExpirySelector, { ExpiryDuration } from '@/components/ExpirySelector';
 import indexedDBService, { FileMetadata } from '@/services/indexedDBService';
 import { useToast } from '@/components/ui/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<FileMetadata | null>(null);
-  const [selectedExpiry, setSelectedExpiry] = useState<ExpiryDuration>({ 
-    value: 1000 * 60 * 60 * 24 * 7, // 7 days default
-    unit: 'days',
-    display: '7 Days'
-  });
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Clean up expired files when the component loads
@@ -33,11 +24,11 @@ const Index = () => {
     setIsUploading(true);
     
     try {
-      const metadata = await indexedDBService.storeFile(file, selectedExpiry.value);
+      const metadata = await indexedDBService.storeFile(file);
       setUploadedFile(metadata);
       toast({
         title: "Upload successful!",
-        description: `${file.name} has been uploaded and will expire in ${selectedExpiry.display}`,
+        description: `${file.name} has been uploaded and is ready to share`,
         duration: 3000,
       });
     } catch (error) {
@@ -53,30 +44,30 @@ const Index = () => {
     }
   };
 
-  const handleExpiryChange = async (duration: ExpiryDuration) => {
-    setSelectedExpiry(duration);
+  const copyShareLink = () => {
+    if (!uploadedFile) return;
     
-    if (uploadedFile) {
-      try {
-        const updatedMetadata = await indexedDBService.updateFileExpiry(uploadedFile.id, duration.value);
-        if (updatedMetadata) {
-          setUploadedFile(updatedMetadata);
-          toast({
-            title: "Expiry updated!",
-            description: `File will now expire in ${duration.display}`,
-            duration: 3000,
-          });
-        }
-      } catch (error) {
-        console.error('Error updating expiry time:', error);
+    // Use window.location to construct a proper URL with the correct protocol
+    const origin = window.location.origin;
+    const shareUrl = `${origin}/download/${uploadedFile.shareId}`;
+    
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => {
         toast({
-          title: "Update failed",
-          description: "Could not update expiry time",
+          title: "Link copied!",
+          description: "Share link has been copied to clipboard",
+          duration: 3000,
+        });
+      })
+      .catch((error) => {
+        console.error('Copy error:', error);
+        toast({
+          title: "Copy failed",
+          description: "Could not copy link to clipboard",
           variant: "destructive",
           duration: 3000,
         });
-      }
-    }
+      });
   };
 
   const handleStopSharing = async () => {
@@ -105,15 +96,6 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
       <div className="container px-4 py-12 mx-auto">
         {/* Header */}
-        <div className="flex justify-end mb-4">
-          <Button variant="ghost" size="sm" asChild className="flex items-center gap-2">
-            <Link to="/tech-stack">
-              <Code size={16} className="text-purple-500" />
-              <span className="hidden sm:inline">Tech Stack</span>
-            </Link>
-          </Button>
-        </div>
-
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-purple-gradient mb-4 animate-expand">
             Fily
@@ -123,37 +105,26 @@ const Index = () => {
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <div className="flex items-center gap-2 text-gray-600 glass px-3 py-1.5 rounded-full shadow-sm">
-              <Shield size={16} className="text-green-500" />
+            <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
+              <Shield size={16} className="text-primary" />
               <span>Secure Sharing</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-600 glass px-3 py-1.5 rounded-full shadow-sm">
-              <Upload size={16} className="text-blue-500" />
+            <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
+              <Upload size={16} className="text-primary" />
               <span>No Size Limits</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-600 glass px-3 py-1.5 rounded-full shadow-sm">
-              <Share2 size={16} className="text-purple-500" />
+            <div className="flex items-center gap-2 text-gray-600 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
+              <Share2 size={16} className="text-primary" />
               <span>Easy Sharing</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600 glass px-3 py-1.5 rounded-full shadow-sm">
-              <Clock size={16} className="text-orange-500" />
-              <span>Custom Expiry</span>
             </div>
           </div>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Upload Area */}
-          <div className="glass rounded-xl shadow-lg p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-semibold mb-4">Upload File</h2>
-            <p className="text-gray-600 mb-6">Drag and drop your file or click to browse.</p>
-            
-            <div className="mb-6">
-              <ExpirySelector 
-                onExpiryChange={handleExpiryChange}
-                defaultValue={selectedExpiry.value}
-              />
-            </div>
+            <p className="text-gray-600 mb-6">Drag and drop your file or click to browse. Your file will be stored securely for 7 days.</p>
             
             <FileDropZone 
               onFileSelected={handleFileSelected} 
@@ -162,22 +133,36 @@ const Index = () => {
           </div>
 
           {/* File Info Area */}
-          <div className="glass rounded-xl shadow-lg p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-semibold mb-4">Share Your File</h2>
             <p className="text-gray-600 mb-6">Once uploaded, you can share your file using the link or code below.</p>
             
             {uploadedFile ? (
               <div className="space-y-4">
-                <FileCard 
-                  metadata={uploadedFile} 
-                  onStopSharing={handleStopSharing}
-                />
+                <FileCard metadata={uploadedFile} />
+                
+                <div className="flex flex-col gap-3">
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={copyShareLink}
+                  >
+                    <Share2 size={18} />
+                    Copy Share Link
+                  </Button>
+                  
+                  <Button 
+                    variant="destructive" 
+                    className="w-full gap-2" 
+                    onClick={handleStopSharing}
+                  >
+                    Stop Sharing
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 backdrop-blur-sm">
-                <Info size={40} className="text-gray-300 mb-3" />
-                <p className="text-gray-500 text-center max-w-xs">
-                  Upload a file to get your share link. Your files are stored locally and securely in your browser.
+              <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+                <p className="text-gray-500 text-center">
+                  Upload a file to get your share link
                 </p>
               </div>
             )}
@@ -185,11 +170,8 @@ const Index = () => {
         </div>
         
         <div className="text-center mt-16">
-          <p className="text-sm text-gray-500">All files are stored locally in your browser and expire based on your selection</p>
+          <p className="text-sm text-gray-500">All files are stored locally in your browser and expire after 7 days</p>
           <div className="mt-4 flex flex-col items-center justify-center">
-            <Link to="/tech-stack" className="text-xs text-primary hover:underline mb-2">
-              View Tech Stack
-            </Link>
             <p className="font-mono text-xs text-gray-400 animate-typing">A Nowhile initiative</p>
             <p className="mt-2 text-sm text-gray-600">Made with ❤️ by Ansh</p>
           </div>

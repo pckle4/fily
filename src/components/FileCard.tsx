@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FileMetadata } from '@/services/indexedDBService';
-import { FileIcon, DownloadIcon, Share2, Clock } from 'lucide-react';
+import { FileIcon, DownloadIcon, Share2, Clock, FileText, FilePdf, FileVideo, FileAudio, FileImage, FileCode, FileArchive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,13 +11,15 @@ interface FileCardProps {
   downloadUrl?: string;
   showDownload?: boolean;
   showShare?: boolean;
+  onStopSharing?: () => void;
 }
 
 const FileCard: React.FC<FileCardProps> = ({ 
   metadata, 
   downloadUrl, 
   showDownload = false,
-  showShare = true
+  showShare = true,
+  onStopSharing
 }) => {
   const { toast } = useToast();
   
@@ -70,21 +72,48 @@ const FileCard: React.FC<FileCardProps> = ({
   
   const daysRemaining = calculateDaysRemaining();
   
+  // Get file icon based on type
+  const getFileIcon = () => {
+    const type = metadata.type.toLowerCase();
+    
+    if (type.includes('image')) {
+      return <FileImage className="h-6 w-6" />;
+    } else if (type.includes('video')) {
+      return <FileVideo className="h-6 w-6" />;
+    } else if (type.includes('audio')) {
+      return <FileAudio className="h-6 w-6" />;
+    } else if (type.includes('pdf')) {
+      return <FilePdf className="h-6 w-6" />;
+    } else if (type.includes('word') || type.includes('document')) {
+      return <FileText className="h-6 w-6" />;
+    } else if (type.includes('zip') || type.includes('compressed')) {
+      return <FileArchive className="h-6 w-6" />;
+    } else if (type.includes('javascript') || type.includes('html') || type.includes('css') || type.includes('json')) {
+      return <FileCode className="h-6 w-6" />;
+    }
+    return <FileIcon className="h-6 w-6" />;
+  };
+
   // Determine file icon background color based on type
   const getFileTypeColor = () => {
-    if (metadata.type.includes('image')) return 'bg-blue-100 text-blue-600';
-    if (metadata.type.includes('video')) return 'bg-red-100 text-red-600';
-    if (metadata.type.includes('audio')) return 'bg-green-100 text-green-600';
-    if (metadata.type.includes('pdf')) return 'bg-yellow-100 text-yellow-600';
-    return 'bg-gray-100 text-gray-600';
+    const type = metadata.type.toLowerCase();
+    
+    if (type.includes('image')) return 'file-icon-image';
+    if (type.includes('video')) return 'file-icon-video';
+    if (type.includes('audio')) return 'file-icon-audio';
+    if (type.includes('pdf')) return 'file-icon-pdf';
+    if (type.includes('word') || type.includes('document')) return 'file-icon-doc';
+    if (type.includes('zip') || type.includes('compressed')) return 'file-icon-zip';
+    if (type.includes('javascript') || type.includes('html') || type.includes('css') || type.includes('json')) return 'file-icon-code';
+    return 'file-icon-default';
   };
 
   return (
-    <Card className="animate-expand overflow-hidden">
+    <Card className="animate-expand overflow-hidden card-hover">
       <div className="p-6">
         <div className="flex items-center gap-4">
           <div className={`p-3 rounded-lg ${getFileTypeColor()}`}>
-            <FileIcon size={24} />
+            {getFileIcon()}
           </div>
           <div className="flex-grow">
             <h3 className="text-lg font-medium truncate" title={metadata.name}>
@@ -100,7 +129,7 @@ const FileCard: React.FC<FileCardProps> = ({
           {showShare && (
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center text-gray-500 gap-2">
-                <Share2 size={16} />
+                <Share2 size={16} className="text-purple-500" />
                 <span>Share Code</span>
               </div>
               <div className="font-mono bg-primary/10 px-2 py-1 rounded text-primary font-medium">
@@ -111,7 +140,7 @@ const FileCard: React.FC<FileCardProps> = ({
           
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center text-gray-500 gap-2">
-              <Clock size={16} />
+              <Clock size={16} className="text-blue-500" />
               <span>Expires in</span>
             </div>
             <div className="font-medium">
@@ -124,22 +153,33 @@ const FileCard: React.FC<FileCardProps> = ({
           {showShare && (
             <Button 
               variant="outline" 
-              className="flex-1"
+              className="flex-1 btn-hover"
               onClick={copyShareLink}
             >
+              <Share2 size={16} className="mr-2 text-purple-500" />
               Copy Share Link
             </Button>
           )}
           
           {showDownload && downloadUrl && (
             <Button 
-              className="flex-1 gap-2"
+              className="flex-1 gap-2 btn-hover bg-blue-gradient"
               asChild
             >
               <a href={downloadUrl} download={metadata.name}>
-                <DownloadIcon size={16} />
+                <DownloadIcon size={16} className="animate-bounce" />
                 Download
               </a>
+            </Button>
+          )}
+          
+          {onStopSharing && (
+            <Button 
+              variant="destructive" 
+              className="flex-1 btn-hover"
+              onClick={onStopSharing}
+            >
+              Stop Sharing
             </Button>
           )}
         </div>
